@@ -1,0 +1,8 @@
+*.yaml
+*.yml
+*.db
+logs
+reports
+venv
+.venv
+.env
