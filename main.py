@@ -67,11 +67,11 @@ class MonitorConfig:
 class DatabaseManager:
     """Handles all database operations"""
 
-    def __init__(self, db_path: str):
+    def __init__(self, db_path: str) -> None:
         self.db_path = db_path
         self.init_database()
 
-    def init_database(self):
+    def init_database(self) -> None:
         """Initialize the SQLite database with required tables"""
         with sqlite3.connect(self.db_path) as conn:
             conn.execute("""
@@ -104,7 +104,7 @@ class DatabaseManager:
         response_time: Optional[float] = None,
         status_code: Optional[int] = None,
         error_message: Optional[str] = None,
-    ):
+    ) -> None:
         """Save a single uptime check result"""
         with sqlite3.connect(self.db_path) as conn:
             conn.execute(
@@ -152,7 +152,7 @@ class DatabaseManager:
 
             return [dict(row) for row in cursor.fetchall()]
 
-    def cleanup_old_data(self, days_to_keep: int):
+    def cleanup_old_data(self, days_to_keep: int) -> None:
         """Remove data older than specified days"""
         cutoff_date = datetime.now() - timedelta(days=days_to_keep)
 
@@ -171,7 +171,7 @@ class DatabaseManager:
 class AlertManager:
     """Handles email and Slack notifications"""
 
-    def __init__(self, config: MonitorConfig):
+    def __init__(self, config: MonitorConfig) -> None:
         self.config = config
         self.logger = logging.getLogger(__name__)
 
@@ -181,7 +181,7 @@ class AlertManager:
         is_failure: bool,
         consecutive_failures: int = 0,
         error_message: str = None,
-    ):
+    ) -> None:
         """Send alert via configured channels"""
         if is_failure and not self.config.alert_on_failure:
             return
@@ -209,7 +209,7 @@ class AlertManager:
 
     def _create_alert_message(
         self, url: str, is_failure: bool, consecutive_failures: int, error_message: str
-    ) -> tuple:
+    ) -> tuple[str, str]:
         """Create alert message content"""
         if is_failure:
             subject = f"🚨 SITE DOWN: {url}"
@@ -237,7 +237,7 @@ class AlertManager:
 
         return subject, message
 
-    async def _send_email_alert(self, subject: str, message: str):
+    async def _send_email_alert(self, subject: str, message: str) -> None:
         """Send email alert"""
         if not EMAIL_AVAILABLE:
             self.logger.warning(
@@ -278,7 +278,7 @@ class AlertManager:
         except Exception as e:
             self.logger.error(f"Failed to send email alert: {e}")
 
-    def _send_email_sync(self, msg):
+    def _send_email_sync(self, msg) -> None:
         """Synchronous email sending (run in executor)"""
         if not EMAIL_AVAILABLE:
             return
@@ -293,7 +293,7 @@ class AlertManager:
         except Exception as e:
             self.logger.error(f"Error in email sync send: {e}")
 
-    async def _send_slack_alert(self, message: str, is_failure: bool):
+    async def _send_slack_alert(self, message: str, is_failure: bool) -> None:
         """Send Slack webhook alert"""
         try:
             color = "danger" if is_failure else "good"
@@ -320,7 +320,7 @@ class AlertManager:
         except Exception as e:
             self.logger.error(f"Failed to send Slack alert: {e}")
 
-    def _send_slack_sync(self, payload):
+    def _send_slack_sync(self, payload) -> None:
         """Synchronous Slack webhook sending"""
         import requests
 
@@ -330,7 +330,8 @@ class AlertManager:
 class UptimeMonitor:
     """Main uptime monitoring class with async scheduling"""
 
-    def __init__(self, config: MonitorConfig):
+    def __init__(self, config: MonitorConfig) -> None:
+        """Initialize the monitor with configuration and setup"""
         self.config = config
         self.db = DatabaseManager(config.db_path)
         self.alert_manager = AlertManager(config)
@@ -411,7 +412,7 @@ class UptimeMonitor:
             "error_message": error_message,
         }
 
-    async def _handle_status_change(self, is_up: bool, error_message: str = None):
+    async def _handle_status_change(self, is_up: bool, error_message: str = None) -> None:
         """Handle status changes and alerting"""
         if is_up:
             if self.consecutive_failures > 0:
@@ -431,7 +432,7 @@ class UptimeMonitor:
 
         self.last_status = is_up
 
-    async def generate_daily_report(self, target_date: datetime.date = None):
+    async def generate_daily_report(self, target_date: datetime.date = None) -> None:
         """Generate uptime visualization for a specific day"""
         if target_date is None:
             target_date = datetime.now().date()
@@ -573,7 +574,7 @@ Max Response: {max_response:.3f}s"""
             f"Uptime: {uptime_percentage:.1f}% ({successful_pings}/{total_pings} successful pings)"
         )
 
-    async def scheduled_tasks(self):
+    async def scheduled_tasks(self) -> None:
         """Run scheduled maintenance tasks"""
         try:
             while self.running:
@@ -596,7 +597,7 @@ Max Response: {max_response:.3f}s"""
             self.logger.info("Scheduled tasks cancelled")
             raise
 
-    async def monitoring_loop(self):
+    async def monitoring_loop(self) -> None:
         """Main monitoring loop"""
         self.logger.info(f"Starting uptime monitor for: {self.config.url}")
 
@@ -614,7 +615,7 @@ Max Response: {max_response:.3f}s"""
             self.logger.info("Monitoring loop cancelled")
             raise
 
-    async def run_monitor(self):
+    async def run_monitor(self) -> None:
         """Start the monitoring system with concurrent tasks"""
         self.running = True
 
@@ -721,7 +722,7 @@ def load_config_from_file(config_path: str = "monitor_config.yaml") -> MonitorCo
     return MonitorConfig(**default_config)
 
 
-async def main():
+async def main() -> None:
     """Main entry point with command-line argument handling"""
     import argparse
     from datetime import datetime, timedelta
