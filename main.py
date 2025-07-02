@@ -13,10 +13,14 @@ from datetime import datetime, timedelta
 
 from monitor_config import load_config_from_file
 from uptime_monitor import UptimeMonitor
+from logging_config import setup_logging
 
 
 async def main() -> None:
     """Main entry point with command-line argument handling"""
+    
+    # Initialize logging first
+    setup_logging()
 
     parser = argparse.ArgumentParser(
         description="Enhanced URL Uptime Monitor",

@@ -5,6 +5,7 @@ import logging
 from datetime import datetime
 
 from monitor_config import MonitorConfig
+from logging_config import get_logger
 
 # Check for email functionality availability
 EMAIL_AVAILABLE = all(
@@ -25,7 +26,7 @@ class AlertManager:
 
     def __init__(self, config: MonitorConfig) -> None:
         self.config = config
-        self.logger = logging.getLogger(__name__)
+        self.logger = get_logger(__name__)
 
     async def send_alert(
         self,

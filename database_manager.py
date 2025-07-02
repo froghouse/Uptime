@@ -3,12 +3,15 @@ import sqlite3
 import logging
 from datetime import datetime, timedelta, time as dt_time
 
+from logging_config import get_logger
+
 
 class DatabaseManager:
     """Handles all database operations"""
 
     def __init__(self, db_path: str) -> None:
         self.db_path = db_path
+        self.logger = get_logger(__name__)
         self.init_database()
 
     def init_database(self) -> None:
@@ -105,4 +108,4 @@ class DatabaseManager:
             )
 
             deleted_rows = cursor.rowcount
-            logging.info(f"Cleaned up {deleted_rows} old records")
+            self.logger.info(f"Cleaned up {deleted_rows} old records")
